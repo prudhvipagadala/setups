@@ -1,0 +1,43 @@
+                        svn-setup
+step1:Install SVN & Apache Packages
+[root@localhost ~]# yum install httpd subversion mod_dav_svn
+
+step2:Edit the configuration file of Apache Subversion
+[root@localhost ~]# vi /etc/httpd/conf.modules.d/10-subversion.conf
+Alias /svn /var/www/svn
+<Location /svn>
+DAV svn
+SVNParentPath /var/www/svn/
+AuthType Basic
+AuthName "SVN Repository"
+AuthUserFile /etc/svn-auth-accounts
+Require valid-user
+</Location>
+
+Step:3 Create SVN Users using htpasswd command
+[root@localhost ~]# htpasswd -cm /etc/svn-auth-accounts linux
+New password:
+Re-type new password:
+Adding password for user linux
+
+[root@localhost ~]# htpasswd -m /etc/svn-auth-accounts prudhvi
+New password:
+Re-type new password:
+Adding password for user prudhvi
+
+Step:4 Create & Configure SVN Repository
+[root@localhost ~]# mkdir /var/www/svn
+[root@localhost ~]# cd /var/www/svn/
+[root@localhost svn]# svnadmin create repo
+[root@localhost svn]# chown apache.apache repo/
+
+Note : In case Selinux is enable then apply below selinux rules.
+[root@localhost svn]# chcon -R -t httpd_sys_content_t /var/www/svn/repo/
+[root@localhost svn]# chcon -R -t httpd_sys_rw_content_t /var/www/svn/repo/
+
+Step:5 Start & enable the Apache (httpd) service
+[root@localhost ~]# systemctl restart httpd.service
+[root@localhost ~]# systemctl enable httpd.service
+
+Step:6 Try to access SVN repo from web browser.
+example:ipaddress:svn/repo
